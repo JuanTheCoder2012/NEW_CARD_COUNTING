@@ -53,6 +53,9 @@ class CardCountingApp:
             self.update_advice(true_count)
         except ValueError as e:
             self.result_label.config(text=str(e))
+            
+        # Clear the input field after calculation
+        self.entry.delete(0, tk.END)    
     
     def calculate_running_count(self, card_value, count):
         if 2 <= card_value <= 6:
