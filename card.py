@@ -22,13 +22,13 @@ def main():
         elif not inp:
             continue
         cards = len(inp)
-        count = 0 
+        count = 0
         for card in inp:
             count += NUM_ON_CARDS.get(card.upper(), 0)
             played = cards / 52.0
             truecount = count / (deck - played)
-        print('Count: {}'.format(count))
-        print('True count: {}'.format(truecount))
+        print(f'Count: {count}')
+        print(f'True count: {truecount}')
 if __name__ == '__main__':
     main()
     
