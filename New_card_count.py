@@ -1,6 +1,8 @@
 def calculate_running_count(card_value, count):
     if 2 <= card_value <= 6:
         return count + 1
+    elif card_value in [7, 8, 9]:
+        return count # 7, 8, and 9 are treated as 0 in the Hi-Lo system
     elif 10 <= card_value <= 13:
         return count - 1
     else:
@@ -36,6 +38,8 @@ def main():
             card_value = int(card_input)
         elif card_input in ['10', 'j', 'q', 'k', 'a']:
             card_value = 10
+        elif card_input in ['7', '8', '9']:
+            card_value = 0 #7, 8, and 9 are treated as 0 in the Hi-Lo system
         else:
             print("Invalid input. Please enter a valid card value.")
             continue
