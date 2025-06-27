@@ -132,8 +132,12 @@ class CardCountingApp(QWidget):
             advice = "Bet normal."
             self.black_card_image.setPixmap(QPixmap("black_card.png"))
             self.red_card_image.clear()
+        elif 0 <= true_count < 1:
+            advice = "Bet less. Deck is neutral."
+            self.black_card_image.clear()
+            self.red_card_image.clear()
         else:
-            advice = "Bet less."
+            advice = "Bet the minimum. Count is negative."
             self.black_card_image.clear()
             self.red_card_image.clear()
         self.advice_label.setText(advice)
