@@ -1,5 +1,13 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout
+from PyQt5.QtWidgets import (
+    QApplication,
+    QWidget,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QVBoxLayout,
+    QHBoxLayout,
+)
 from PyQt5.QtGui import QPixmap
 
 class CardCountingApp(QWidget):
@@ -14,8 +22,12 @@ class CardCountingApp(QWidget):
         self.cards_per_deck = 52
         self.total_cards = self.decks * self.cards_per_deck
 
-        self.label = QLabel('Enter card values (2-10, J, Q, K, A, 7, 8, 9). Type "exit" to quit:')
-        self.entry = QLineEdit(self)
+        self.cards_played = 0
+
+        self.dealer_label = QLabel('Dealer cards (comma separated):')
+        self.dealer_entry = QLineEdit(self)
+        self.player_label = QLabel('Player cards (comma separated):')
+        self.player_entry = QLineEdit(self)
         self.result_label = QLabel(self)
         self.advice_label = QLabel(self)
         self.red_card_image = QLabel(self)
@@ -32,8 +44,10 @@ class CardCountingApp(QWidget):
         button_layout.addWidget(self.exit_button)
 
         layout = QVBoxLayout(self)
-        layout.addWidget(self.label)
-        layout.addWidget(self.entry)
+        layout.addWidget(self.dealer_label)
+        layout.addWidget(self.dealer_entry)
+        layout.addWidget(self.player_label)
+        layout.addWidget(self.player_entry)
         layout.addLayout(button_layout)
         layout.addWidget(self.result_label)
         layout.addWidget(self.advice_label)
@@ -45,39 +59,63 @@ class CardCountingApp(QWidget):
 
         self.show()
 
-    def calculate_count(self):
-        card_input = self.entry.text().strip().lower()
+    def parse_cards(self, text: str):
+        text = text.replace(',', ' ')
+        return [t.lower() for t in text.split() if t]
 
-        if card_input == 'exit':
+    def get_card_value(self, card: str):
+        mapping = {
+            '2': 2,
+            '3': 3,
+            '4': 4,
+            '5': 5,
+            '6': 6,
+            '7': 7,
+            '8': 8,
+            '9': 9,
+            '10': 10,
+            'j': 11,
+            'q': 12,
+            'k': 13,
+            'a': 14,
+        }
+        if card not in mapping:
+            raise ValueError("Invalid input.")
+        return mapping[card]
+
+    def calculate_count(self):
+        dealer_cards = self.parse_cards(self.dealer_entry.text())
+        player_cards = self.parse_cards(self.player_entry.text())
+        cards = dealer_cards + player_cards
+
+        if any(c == 'exit' for c in cards):
             sys.exit()
 
         try:
-            if card_input in ['2', '3', '4', '5', '6']:
-                card_value = int(card_input)
-            elif card_input in ['10', 'j', 'q', 'k', 'a']:
-                card_value = 10
-            elif card_input in ['7', '8', '9']:
-                card_value = 0
-            else:
-                raise ValueError("Invalid input.")
+            for card in cards:
+                value = self.get_card_value(card)
+                self.running_count = self.calculate_running_count(value, self.running_count)
 
-            self.running_count = self.calculate_running_count(card_value, self.running_count)
-            remaining_decks = (self.total_cards - len(card_input.split())) / self.cards_per_deck
+            self.cards_played += len(cards)
+            remaining_decks = (self.total_cards - self.cards_played) / self.cards_per_deck
             true_count = self.calculate_true_count(self.running_count, remaining_decks)
 
-            self.result_label.setText(f'Running Count: {self.running_count}\nTrue Count: {true_count:.2f}')
+            self.result_label.setText(
+                f'Running Count: {self.running_count}\nTrue Count: {true_count:.2f}'
+            )
             self.update_advice(true_count)
         except ValueError as e:
             self.result_label.setText(str(e))
 
-        self.entry.clear()
+        self.dealer_entry.clear()
+        self.player_entry.clear()
 
     def calculate_running_count(self, card_value, count):
         if 2 <= card_value <= 6:
             return count + 1
         elif card_value in [7, 8, 9]:
             return count
-        elif 10 <= card_value <= 13:
+        elif 10 <= card_value <= 14:
             return count - 1
         else:
             raise ValueError("Invalid card value.")
